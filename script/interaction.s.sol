@@ -79,7 +79,7 @@ contract AddConsumer is Script {
 }
 
 contract FundSubscription is Script, CodeConstants {
-    uint256 constant FUND_AMOUNT = 3 ether;
+    uint256 constant FUND_AMOUNT = 10 ether; // 提高充值金额以支付 VRF 费用
 
     function fundSubscriptionUsingConfig() public {
         HelperConfig helperConfig = new HelperConfig();

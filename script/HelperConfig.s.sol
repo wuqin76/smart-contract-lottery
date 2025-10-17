@@ -7,10 +7,10 @@ import {LinkToken} from "test/mocks/LinkToken.sol";
 
 abstract contract CodeConstants {
     //存储常量
-    //VRF MOCK值
-    uint96 public constant MOCK_base_fee = 0.0001 ether; // 0.0001 LINK
-    uint96 public constant MOCK_gas_price = 0.0000001 ether; // 0.0000001 LINK per gas
-    int256 public constant MOCK_wei_per_unit_link = 1e18; // 1 LINK = 1 ETH (模拟值)
+    //VRF MOCK值 - 调整为更低的费用以适应测试
+    uint96 public constant MOCK_base_fee = 0.1 ether; // 基础费用降低到 0.1 ether
+    uint96 public constant MOCK_gas_price = 1; // gas 价格设为 1 wei (极低)
+    int256 public constant MOCK_wei_per_unit_link = 4e15; // 1 LINK = 0.004 ETH
 
     uint256 public constant ETH_SEPOLIA_CHAIN_ID = 11155111;
     uint256 public constant LOCAL_CHAIN_ID = 31337;

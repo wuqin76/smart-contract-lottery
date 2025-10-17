@@ -49,8 +49,8 @@ contract Raffle is VRFConsumerBaseV2Plus {
         uint256 entranceFee,
         uint256 interval, //interval是多久开奖一次，单位是秒
         address vrfCoordinator,
-        bytes32 keyHash,  //keyHash是VRF请求的唯一标识符
-        uint256 subscriptionId,  //subscriptionId是VRF订阅ID
+        bytes32 keyHash, //keyHash是VRF请求的唯一标识符
+        uint256 subscriptionId, //subscriptionId是VRF订阅ID
         uint32 callbackGasLimit
     ) VRFConsumerBaseV2Plus(vrfCoordinator) {
         //从继承的VRFConsumerBaseV2合约调用构造函数
@@ -102,7 +102,8 @@ contract Raffle is VRFConsumerBaseV2Plus {
      * @dev 当checkUpkeep返回true时，这个函数被Chainlink Keeper网络调用
      * 它会启动随机数请求
      */
-    function performUpkeep(bytes calldata /* performData */) external {   //calldata是Solidity中的一种数据位置，表示函数参数是只读的，不能被修改，并且存储在调用数据中，适用于外部函数参数，可以节省gas费用
+    function performUpkeep(bytes calldata /* performData */) external {
+        //calldata是Solidity中的一种数据位置，表示函数参数是只读的，不能被修改，并且存储在调用数据中，适用于外部函数参数，可以节省gas费用
         (bool upkeepNeeded, ) = checkUpkeep(""); //调用checkUpkeep函数来检查是否需要执行upkeep
         if (!upkeepNeeded) {
             //如果不能执行upkeep，就抛出一个自定义错误Raffle_UpkeepNotNeeded，并传递当前合约的余额、玩家数量和抽奖状态作为参数
@@ -115,17 +116,24 @@ contract Raffle is VRFConsumerBaseV2Plus {
 
         raffleState = RaffleState.CALCULATING; // 设置抽奖状态为计算中,防止在计算赢家时有人进入抽奖
 
-        // 构造 VRF v2.5/Plus 请求结构体，使用原生 ETH 支付
+        // 构造 VRF v2.5/Plus 请求结构体
+        // 本地链使用原生 ETH 支付（与 fundSubscriptionWithNative 匹配）
+        // 测试网使用 LINK 支付
+        bool useNativePayment = (block.chainid == 31337); // 本地链 ID
+
         VRFV2PlusClient.RandomWordsRequest memory request = VRFV2PlusClient //request是一个结构体变量，类型是VRFV2PlusClient.RandomWordsRequest
             .RandomWordsRequest({
-                keyHash: KEY_HASH, // 选择最大支付能力的keyHash，以提高请求成功率，choose the keyHash with the highest payment capability to improve request success rate,
-                subId: SUBSCRIPTION_ID, // 订阅ID，必须是有效的订阅ID，must be a valid subscription ID
-                requestConfirmations: REQUEST_CONFIRMATIONS, //请求确认数，设置为3，表示需要3个区块的确认,request confirmations, set to 3, meaning 3 block confirmations are needed,
+                keyHash: KEY_HASH, // 选择最大支付能力的keyHash，以提高请求成功率
+                subId: SUBSCRIPTION_ID, // 订阅ID，必须是有效的订阅ID
+                requestConfirmations: REQUEST_CONFIRMATIONS, //请求确认数，设置为3，表示需要3个区块的确认
                 callbackGasLimit: CALLBACK_GAS_LIMIT, // 回调函数的最大耗气量
-                numWords: NUM_WORDS, //设置为1，表示只需要一个随机数。set to 1, meaning only one random number is needed.
+                numWords: NUM_WORDS, //设置为1，表示只需要一个随机数
                 extraArgs: VRFV2PlusClient._argsToBytes( //_argsToBytes是一个内部函数，用于将ExtraArgsV1结构体转换为字节数组
-                    // 设置为原生支付（如在 Sepolia 上用 ETH 而非 LINK）
-                    VRFV2PlusClient.ExtraArgsV1({nativePayment: false}) //nativePayment设为false，表示不使用原生代币支付(如ETH)
+                    // 本地链：使用原生支付（ETH）与 fundSubscriptionWithNative 匹配
+                    // 测试网：使用 LINK 支付
+                    VRFV2PlusClient.ExtraArgsV1({
+                        nativePayment: useNativePayment
+                    })
                 )
             });
 

@@ -98,7 +98,6 @@ contract RaffleTest is Test {
         assert(!upkeepNeeded);
     }
 
-    //老师写的和我这个又不一样了，
     function testCheckUpkeepReturnsFalseIfRaffleIsntOpen()
         public
         raffleEntered
@@ -108,7 +107,7 @@ contract RaffleTest is Test {
         (bool upkeepNeeded, ) = raffle.checkUpkeep("");
         // Assert
         assert(!upkeepNeeded);
-    } //我感觉不对吧，他这个测试的意思不是当Raffle还没有开启得時候吗，应该是时间还没到呀，他這個測的是什么
+    }
 
     function testCheckUpkeepReturnsFalseIfEnoughTimeHasntPassed() public {
         //Arrange
@@ -197,67 +196,53 @@ contract RaffleTest is Test {
         ); //调用VRFCoordinatorV2_5Mock合约的fulfillRandomWords函数，传入随机请求ID和Raffle合约地址
     }
 
-    function testFulfillRandomWordsPicksWinnerAndSendsMoney()
+    function testFulfillRandomWordsPicksAWinnerResetsAndSendsMoney()
         public
         raffleEntered
         skipFork
     {
-        uint256 additionalEntrants = 3;
-        uint256 startingIndex = 1;
         address expectedWinner = address(1);
+
+        // Arrange
+        uint256 additionalEntrances = 3;
+        uint256 startingIndex = 1; // We have starting index be 1 so we can start with address(1) and not address(0)
 
         for (
             uint256 i = startingIndex;
-            i < additionalEntrants + startingIndex;
+            i < startingIndex + additionalEntrances;
             i++
         ) {
-            address newplayer = address(uint160(i));
-            hoax(newplayer, 1 ether);
+            address player = address(uint160(i));
+            hoax(player, 1 ether); // deal 1 eth to the player
             raffle.enterRaffle{value: entranceFee}();
         }
 
-        uint256 startingTimestamp = raffle.getLastTimeStamp();
+        uint256 startingTimeStamp = raffle.getLastTimeStamp();
         uint256 startingBalance = expectedWinner.balance;
 
-        console.log("Starting timestamp:", startingTimestamp);
-        console.log("Starting balance:", startingBalance);
-        console.log("Requesting upkeep...");
+        // Act
         vm.recordLogs();
-        raffle.performUpkeep("");
+        raffle.performUpkeep(""); // emits requestId
         Vm.Log[] memory entries = vm.getRecordedLogs();
-        console2.log("Logs recorded:", entries.length);
-        for (uint256 i = 0; i < entries.length; i++) {
-            console2.log("Log index:", i);
-            console2.log("Topic 0:", uint256(entries[i].topics[0]));
-            if (entries[i].topics.length > 1) {
-                console2.log("Topic 1:", uint256(entries[i].topics[1]));
-            }
-        }
-        bytes32 requestId = entries[1].topics[1];
-        console2.log("Request ID:", uint256(requestId));
-        console2.log("Fulfilling random words...");
+        console2.logBytes32(entries[1].topics[1]);
+        bytes32 requestId = entries[1].topics[1]; // get the requestId from the logs
+
         VRFCoordinatorV2_5Mock(vrfCoordinator).fulfillRandomWords(
             uint256(requestId),
             address(raffle)
         );
 
-        //assert
-        console2.log("Asserting results...");
+        // Assert
         address recentWinner = raffle.getRecentWinner();
-        console2.log("Recent winner:", recentWinner);
         Raffle.RaffleState raffleState = raffle.getRaffleState();
-        console2.log("Raffle state:", uint256(raffleState));
         uint256 winnerBalance = recentWinner.balance;
-        console2.log("Winner balance:", winnerBalance);
-        uint256 endingTimestamp = raffle.getLastTimeStamp();
-        console2.log("Ending timestamp:", endingTimestamp);
-        uint256 prize = entranceFee * (additionalEntrants + 1);
-        console2.log("Prize:", prize);
+        uint256 endingTimeStamp = raffle.getLastTimeStamp();
+        uint256 prize = entranceFee * (additionalEntrances + 1);
 
         assert(recentWinner == expectedWinner);
-        assert(winnerBalance == startingBalance + prize);
         assert(uint256(raffleState) == 0);
-        assert(endingTimestamp > startingTimestamp);
+        assert(winnerBalance == startingBalance + prize);
+        assert(endingTimeStamp > startingTimeStamp);
     }
 }
 
