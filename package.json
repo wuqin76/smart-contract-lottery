@@ -1,0 +1,15 @@
+{
+  "name": "smart-contract-lottery",
+  "version": "1.0.0",
+  "description": "A decentralized lottery smart contract",
+  "dependencies": {
+    "@chainlink/contracts": "^0.8.0",
+    "@openzeppelin/contracts": "^4.9.3",
+    "@openzeppelin/contracts-upgradeable": "^4.9.3"
+  },
+  "scripts": {
+    "install-deps": "npm install"
+  },
+  "author": "",
+  "license": "MIT"
+}

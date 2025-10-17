@@ -1,0 +1,20 @@
+{
+    "solidity.compileUsingRemoteVersion": "v0.8.19",
+    "solidity.packageDefaultDependenciesDirectory": "lib",
+    "solidity.packageDefaultDependenciesContractsDirectory": "",
+    "solidity.remappings": [
+        "@chainlink/contracts/=lib/chainlink-brownie-contracts/contracts/",
+        "chainlink-brownie-contracts/=lib/chainlink-brownie-contracts/",
+        "forge-std/=lib/forge-std/src/"
+    ],
+    "solidity.remappingsUnix": [
+        "@chainlink/contracts/=lib/chainlink-brownie-contracts/contracts/",
+        "chainlink-brownie-contracts/=lib/chainlink-brownie-contracts/",
+        "forge-std/=lib/forge-std/src/"
+    ],
+    "solidity.enableLocalNodeCompiler": false,
+    "editor.formatOnSave": true,
+    "files.associations": {
+        "*.sol": "solidity"
+    }
+}
